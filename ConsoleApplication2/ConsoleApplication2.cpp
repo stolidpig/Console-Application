@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <Windows.h>
 
 using namespace std;
@@ -29,6 +30,7 @@ int main()
 	map += L"################";
 	map += L"#..............#";
 	map += L"#..............#";
+	map += L"#####......#####";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
@@ -37,63 +39,86 @@ int main()
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
+	map += L"#......##......#";
+	map += L"#....######....#";
+	map += L"#..##########..#";
 	map += L"################";
+
+	auto tp1 = chrono::system_clock::now();
+	auto tp2 = chrono::system_clock::now();
 
 	// Game Loop
 	while (true)
 	{
+
+		tp2 = chrono::system_clock::now();
+		chrono::duration<float> elapsedTime = tp2 - tp1;
+		tp1 = tp2;
+		float fElapedTime = elapsedTime.count();
+
+		// Controls
+
+		// Handle CCW Rotation
+		if (GetAsyncKeyState((unsigned short)'A') & 0x8000)
+			fPlayerA -= (0.3f * fElapedTime);
 		
-		for (int x = 0; x < nScreenWidth; x++)
+		// Handle CW Rotation
+		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
+			fPlayerA += (0.3f) * fElapedTime;
+		
+		for (int x = 0; x < nScreenWidth; x++) // For each column
 		{
-			// For each column, calculate the projected ray angle into world space
+			// Calculate the projected ray angle into world space
 			float fRayAngle = (fPlayerA - fFOV / 2.0f) + ((float)x / (float)nScreenWidth) * fFOV;
-			float fDistanceToWall = 0;
+
+
+			// Calulate the projected rays distance to wall
+			float fDistanceToWall = 0.0f;
 			bool bHitWall = false;
 			float fEyeX = sinf(fRayAngle); // Unit vector for ray in player space
-			float fEyeY = cosf(fRayAngle);
+			float fEyeY = cosf(fRayAngle); // Direction the player is looking
 
 			while (!bHitWall && fDistanceToWall < fDepth)
 			{
 				fDistanceToWall += 0.1f;
 
+				// Calculate coordinates of the ray from player
 				int nTestX = (int)(fPlayerX + fEyeX * fDistanceToWall);
 				int nTestY = (int)(fPlayerY + fEyeY * fDistanceToWall);
 
-				// Test if ray is out of bounds
+				// Test if ray is currently out of bounds
 				if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY > nMapHeight) {
 					bHitWall = true;	// Just set distance to max depth
 					fDistanceToWall = fDepth;
 				}
 				else {	// We are in bounds
-
-					if (map[nTestY * nMapWidth + nTestX] == '#')
-					{
+					if (map[nTestY * nMapWidth + nTestX] == '#') // We have hit a wall
 						bHitWall = true;
-					}
 				}
 			}
-
 			// Calculate distance to ceiling and floor
 			int nCeiling = (float)(nScreenHeight / 2.0) - nScreenHeight / ((float)fDistanceToWall);
 			int nFloor = nScreenHeight - nCeiling;
 
+			short nShade = ' ';
+
+			if (fDistanceToWall <= fDepth / 4.0f)		nShade = 0x2588;		// Very Close
+			else if (fDistanceToWall <= fDepth / 3.0f)	nShade = 0x2593;
+			else if (fDistanceToWall <= fDepth / 2.0f)	nShade = 0x2592;
+			else if (fDistanceToWall <= fDepth)			nShade = 0x2591;		// Too far away
+			else										nShade = ' ';
+
 			for (int y = 0; y < nScreenHeight; y++)
 			{
-				if( y < nCeiling)
+				if (y <= nCeiling)
 					screen[y*nScreenWidth + x] = ' ';
 				else if (y > nCeiling && y <= nFloor)
-					screen[y*nScreenWidth + x] = '#';
+					screen[y*nScreenWidth + x] = nShade;
 				else
-					screen[y*nScreenWidth + x] = ' ';
+					screen[y*nScreenWidth + x] = '.';
 			}
 
 		}
-
-
 
 		screen[nScreenWidth*nScreenHeight - 1] = '\0';
 		WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth*nScreenHeight, { 0,0 }, &dwBytesWritten);
