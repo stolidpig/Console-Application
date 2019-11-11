@@ -31,14 +31,14 @@ int main()
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#####......#####";
+	map += L"#####......#####";
+	map += L"###..........###";
+	map += L"##............##";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
+	map += L"#......##......#";
 	map += L"#......##......#";
 	map += L"#....######....#";
 	map += L"#..##########..#";
@@ -65,6 +65,16 @@ int main()
 		// Handle CW Rotation
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
 			fPlayerA += (0.3f) * fElapedTime;
+
+		// Move Forwards
+		if (GetAsyncKeyState((unsigned short)'W') & 0x8000)
+			fPlayerX += sinf(fPlayerA) * 3.0f * fElapedTime;
+			fPlayerY += cosf(fPlayerA) * 3.0f * fElapedTime;
+
+		// Move Backwards
+		if (GetAsyncKeyState((unsigned short)'S') & 0x8000)
+			fPlayerX -= sinf(fPlayerA) * 3.0f * fElapedTime;
+			fPlayerY -= cosf(fPlayerA) * 3.0f * fElapedTime;
 		
 		for (int x = 0; x < nScreenWidth; x++) // For each column
 		{
@@ -102,10 +112,10 @@ int main()
 
 			short nShade = ' ';
 
-			if (fDistanceToWall <= fDepth / 4.0f)		nShade = 0x2588;		// Very Close
-			else if (fDistanceToWall <= fDepth / 3.0f)	nShade = 0x2593;
-			else if (fDistanceToWall <= fDepth / 2.0f)	nShade = 0x2592;
-			else if (fDistanceToWall <= fDepth)			nShade = 0x2591;		// Too far away
+			if (fDistanceToWall < fDepth / 4.0f)		nShade = 0x2588;		// Very Close
+			else if (fDistanceToWall < fDepth / 3.0f)	nShade = 0x2593;
+			else if (fDistanceToWall < fDepth / 2.0f)	nShade = 0x2592;
+			else if (fDistanceToWall < fDepth)			nShade = 0x2591;		// Too far away
 			else										nShade = ' ';
 
 			for (int y = 0; y < nScreenHeight; y++)
