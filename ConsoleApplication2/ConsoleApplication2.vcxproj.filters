@@ -20,7 +20,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ConsoleApplication2.cpp">
+    <ClCompile Include="ConsoleFPS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

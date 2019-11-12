@@ -15,7 +15,7 @@ int nMapWidth = 16;
 int nMapHeight = 16;
 
 float fFOV = 3.14159 / 4.0;
-float fDepth = 16.0f;
+float fDepth = 12.0f;
 
 int main()
 {
@@ -32,14 +32,14 @@ int main()
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
+	map += L"#.........##...#";
+	map += L"#.........##...#";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
 	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..######......#";
 	map += L"#......##......#";
 	map += L"#......####....#";
 	map += L"#......######..#";
@@ -61,24 +61,25 @@ int main()
 
 		// Handle CCW Rotation
 		if (GetAsyncKeyState((unsigned short)'A') & 0x8000)
-			fPlayerA -= (1.0f * fElapedTime);
+			fPlayerA -= (1.0f) * fElapedTime;
 		
 		// Handle CW Rotation
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
 			fPlayerA += (1.0f) * fElapedTime;
 
 		// Move Forwards
-		if (GetAsyncKeyState((unsigned short)'W') & 0x8000)
+		if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
 			fPlayerX += sinf(fPlayerA) * 2.0f * fElapedTime;
 			fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
+		}
 
 		// Move Backwards
-		if (GetAsyncKeyState((unsigned short)'S') & 0x8000)
+		if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
 			fPlayerX -= sinf(fPlayerA) * 2.0f * fElapedTime;
 			fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
-		
+		}
 
-		// Create the current frame screen row at a time
+		// Create the current frame row at a time
 		for (int x = 0; x < nScreenWidth; x++) // For each column
 		{
 			// Calculate the projected ray angle into world space
@@ -100,7 +101,7 @@ int main()
 				int nTestY = (int)(fPlayerY + fEyeY * fDistanceToWall);
 
 				// Test if ray is currently out of bounds
-				if (nTestX < 0 || nTestX >= nMapWidth || nTestY < 0 || nTestY > nMapHeight) {
+				if (nTestX < 0 || nTestX > nMapWidth || nTestY < 0 || nTestY > nMapHeight) {
 					bHitWall = true;	// Just set distance to max depth
 					fDistanceToWall = fDepth;
 				}
