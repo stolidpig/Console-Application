@@ -7,12 +7,16 @@ using namespace std;
 int nScreenWidth = 120;
 int nScreenHeight = 40;
 
+int nMapWidth = 16;
+int nMapHeight = 16;
+
 float fPlayerX = 8.0f;
 float fPlayerY = 8.0f;
 float fPlayerA = 0.0f;
-
-int nMapWidth = 16;
-int nMapHeight = 16;
+int nPlayerPos() {
+	int PlayerPos = (int)fPlayerY * nMapWidth + (int)fPlayerX;
+	return PlayerPos;
+}
 
 float fFOV = 3.14159 / 4.0;
 float fDepth = 12.0f;
@@ -67,16 +71,25 @@ int main()
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
 			fPlayerA += (1.0f) * fElapedTime;
 
-		// Move Forwards
+		// Move Forwards unless blocked
 		if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
 			fPlayerX += sinf(fPlayerA) * 2.0f * fElapedTime;
 			fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
-		}
 
-		// Move Backwards
+			if (map[nPlayerPos()] == '#') {
+				fPlayerX -= sinf(fPlayerA) * 2.0f * fElapedTime;
+				fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
+			}
+		}
+		// Move Backwards unless blocked
 		if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
 			fPlayerX -= sinf(fPlayerA) * 2.0f * fElapedTime;
 			fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
+
+			if (map[nPlayerPos()] == '#') {
+				fPlayerX += sinf(fPlayerA) * 2.0f * fElapedTime;
+				fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
+			}
 		}
 
 		// Create the current frame row at a time
@@ -88,6 +101,7 @@ int main()
 
 			// Calulate the projected rays distance to wall
 			float fDistanceToWall = 0.0f;
+			bool bHitBoundary;
 			bool bHitWall = false;
 			float fEyeX = sinf(fRayAngle); // Unit vector for ray in player space
 			float fEyeY = cosf(fRayAngle); // Direction the player is looking
@@ -131,8 +145,14 @@ int main()
 					screen[y*nScreenWidth + x] = ' ';
 				else if (y > nCeiling && y <= nFloor)
 					screen[y*nScreenWidth + x] = nShade;
-				else
-					screen[y*nScreenWidth + x] = '.';
+				else {
+					float b = 1.0f - ((float)y - nScreenHeight / 2.0f) / ((float)nScreenHeight / 2.0f);
+					if		(b < 0.25)	nShade = 'O';
+					else if (b < 0.5)	nShade = 'o';
+					else if (b < 0.75)	nShade = '.';
+					else				nShade = ' ';
+					screen[y*nScreenWidth + x] = nShade;
+				}
 			}
 
 		} 
