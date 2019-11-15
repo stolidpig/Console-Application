@@ -34,19 +34,19 @@ int main()
 
 	map += L"################";
 	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#.........##...#";
-	map += L"#.........##...#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#..............#";
-	map += L"#......##......#";
-	map += L"#......####....#";
-	map += L"#......######..#";
+	map += L"#..#...#.......#";
+	map += L"#..#...#.......#";
+	map += L"#..#...#..##...#";
+	map += L"#..#...#..##...#";
+	map += L"#..#...#..######";
+	map += L"#..#...#.......#";
+	map += L"#..#...#.......#";
+	map += L"#..##########..#";
+	map += L"#..#...........#";
+	map += L"#..#...........#";
+	map += L"#..#...##......#";
+	map += L"#..#...####....#";
+	map += L"#..#...######..#";
 	map += L"################";
 
 	auto tp1 = chrono::system_clock::now();
@@ -74,22 +74,20 @@ int main()
 		// Move Forwards unless blocked
 		if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
 			fPlayerX += sinf(fPlayerA) * 2.0f * fElapedTime;
-			fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
-
-			if (map[nPlayerPos()] == '#') {
+			if (map[nPlayerPos()] == '#')
 				fPlayerX -= sinf(fPlayerA) * 2.0f * fElapedTime;
+			fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
 				fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
-			}
 		}
 		// Move Backwards unless blocked
 		if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
 			fPlayerX -= sinf(fPlayerA) * 2.0f * fElapedTime;
-			fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
-
-			if (map[nPlayerPos()] == '#') {
+			if (map[nPlayerPos()] == '#')
 				fPlayerX += sinf(fPlayerA) * 2.0f * fElapedTime;
+			fPlayerY -= cosf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
 				fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
-			}
 		}
 
 		// Create the current frame row at a time
