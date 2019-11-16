@@ -64,11 +64,11 @@ int main()
 		// Controls
 
 		// Handle CCW Rotation
-		if (GetAsyncKeyState((unsigned short)'A') & 0x8000)
+		if (GetAsyncKeyState((unsigned short)'Q') & 0x8000)
 			fPlayerA -= (1.0f) * fElapedTime;
 		
 		// Handle CW Rotation
-		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
+		if (GetAsyncKeyState((unsigned short)'E') & 0x8000)
 			fPlayerA += (1.0f) * fElapedTime;
 
 		// Move Forwards unless blocked
@@ -89,14 +89,30 @@ int main()
 			if (map[nPlayerPos()] == '#')
 				fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
 		}
+		// Handle strafing
+		if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
+			fPlayerX -= cosf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
+				fPlayerX += cosf(fPlayerA) * 2.0f * fElapedTime;
+			fPlayerY -= sinf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
+				fPlayerY += sinf(fPlayerA) * 2.0f * fElapedTime;
+		}
+		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) {
+			fPlayerX += cosf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
+				fPlayerX -= cosf(fPlayerA) * 2.0f * fElapedTime;
+			fPlayerY += sinf(fPlayerA) * 2.0f * fElapedTime;
+			if (map[nPlayerPos()] == '#')
+				fPlayerY -= sinf(fPlayerA) * 2.0f * fElapedTime;
+		}
 
 		// Create the current frame row at a time
 		for (int x = 0; x < nScreenWidth; x++) // For each column
 		{
 			// Calculate the projected ray angle into world space
 			float fRayAngle = (fPlayerA - fFOV / 2.0f) + ((float)x / (float)nScreenWidth) * fFOV;
-
-
+			
 			// Calulate the projected rays distance to wall
 			float fDistanceToWall = 0.0f;
 			bool bHitBoundary;
@@ -154,13 +170,8 @@ int main()
 			}
 
 		} 
-
 		screen[nScreenWidth*nScreenHeight - 1] = '\0';
-
 		// Draw the current frame
 		WriteConsoleOutputCharacter(hConsole, screen, nScreenWidth*nScreenHeight, { 0,0 }, &dwBytesWritten);
-
 	}
-
-
 }
