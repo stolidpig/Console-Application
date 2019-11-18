@@ -1,6 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <Windows.h>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -12,7 +14,7 @@ int nMapHeight = 16;
 
 float fPlayerX = 8.0f;
 float fPlayerY = 8.0f;
-float fPlayerA = 0.0f;
+float fPlayerA = 1.0f;
 int nPlayerPos() {
 	int PlayerPos = (int)fPlayerY * nMapWidth + (int)fPlayerX;
 	return PlayerPos;
@@ -90,7 +92,7 @@ int main()
 				fPlayerY += cosf(fPlayerA) * 2.0f * fElapedTime;
 		}
 		// Handle strafing
-		if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
+		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) {
 			fPlayerX -= cosf(fPlayerA) * 2.0f * fElapedTime;
 			if (map[nPlayerPos()] == '#')
 				fPlayerX += cosf(fPlayerA) * 2.0f * fElapedTime;
@@ -98,7 +100,7 @@ int main()
 			if (map[nPlayerPos()] == '#')
 				fPlayerY += sinf(fPlayerA) * 2.0f * fElapedTime;
 		}
-		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) {
+		if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
 			fPlayerX += cosf(fPlayerA) * 2.0f * fElapedTime;
 			if (map[nPlayerPos()] == '#')
 				fPlayerX -= cosf(fPlayerA) * 2.0f * fElapedTime;
@@ -134,23 +136,44 @@ int main()
 					fDistanceToWall = fDepth;
 				}
 				else {	// We are in bounds
-					if (map[nTestY * nMapWidth + nTestX] == '#') // We have hit a wall
+					if (map[nTestY * nMapWidth + nTestX] == '#') {
+						// We have hit a wall
 						bHitWall = true;
+						vector<pair<float, float>> p; // distance to corner, angle between vectors (dot)
+						for (int tx = 0; tx < 2; tx++) {
+							for (int ty = 0; ty < 2; ty++) // for the 4 corners
+							{
+								float vy = (float)nTestY + ty - fPlayerY;
+								float vx = (float)nTestX + tx - fPlayerX;
+								float d = sqrt(vx*vx + vy * vy);
+								float dot = (fEyeX*vx / d) + (fEyeY*vy / d);
+								p.push_back(make_pair(d, dot));
+							}
+						// Sort pairs from closest to farthest
+						sort(p.begin(), p.end(), [](const pair<float, float> &left, const pair<float, float> &right) { return left.first < right.first; });
+
+						float fBound = 0.01;
+						if (acos(p.at(0).second) < fBound) bHitBoundary = true;
+						if (acos(p.at(1).second) < fBound) bHitBoundary = true;
+						if (acos(p.at(3).second) < fBound) bHitBoundary = true;
+						}
+					}
 				}
 			}
 			
 			// As wall gets further it is smaller - perspective
 			int nCeiling = (float)(nScreenHeight / 2.0) - nScreenHeight / ((float)fDistanceToWall);
 			int nFloor = nScreenHeight - nCeiling;
-
-			short nShade = ' ';
-
+			
 			// As wall gets further away shading gets darker
+			short nShade = ' ';
 			if (fDistanceToWall < fDepth / 4.0f)		nShade = 0x2588;		// Very Close
 			else if (fDistanceToWall < fDepth / 3.0f)	nShade = 0x2593;
 			else if (fDistanceToWall < fDepth / 2.0f)	nShade = 0x2592;
 			else if (fDistanceToWall < fDepth)			nShade = 0x2591;		// Too far away
 			else										nShade = ' ';
+
+			if (bHitBoundary) nShade = 'I';
 
 			// Apply shade to ceiling, walls and floor
 			for (int y = 0; y < nScreenHeight; y++)
